@@ -19,11 +19,8 @@ app.use(cors());
 app.use("/api/auth", authRoutes);
 app.use("/api", chatRoutes);
 
-// Static frontend serving
-app.use(express.static(path.join(__dirname, '../frontend/dist')));
-app.get(/^(?!\/api).*/, (req, res) => {
-    res.sendFile(path.join(__dirname, '../frontend/dist', 'index.html'));
-});
+// API ONLY SERVER
+// Frontend is independently served and decoupled on Vercel
 
 app.listen(PORT, () => {
     console.log(`server running on ${PORT}`);
