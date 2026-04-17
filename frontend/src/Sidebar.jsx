@@ -6,9 +6,11 @@ import {v1 as uuidv1} from "uuid";
 function Sidebar() {
     const {allThreads, setAllThreads, currThreadId, setNewChat, setPrompt, setReply, setCurrThreadId, setPrevChats, token} = useContext(MyContext);
 
+    const apiUrl = import.meta.env.VITE_API_URL || "";
+
     const getAllThreads = async () => {
         try {
-            const response = await fetch("/api/thread", {
+            const response = await fetch(`${apiUrl}/api/thread`, {
                 headers: { "Authorization": `Bearer ${token}` }
             });
             const res = await response.json();
@@ -37,7 +39,7 @@ function Sidebar() {
         setCurrThreadId(newThreadId);
 
         try {
-            const response = await fetch(`/api/thread/${newThreadId}`, {
+            const response = await fetch(`${apiUrl}/api/thread/${newThreadId}`, {
                 headers: { "Authorization": `Bearer ${token}` }
             });
             const res = await response.json();
@@ -52,7 +54,7 @@ function Sidebar() {
 
     const deleteThread = async (threadId) => {
         try {
-            const response = await fetch(`/api/thread/${threadId}`, {
+            const response = await fetch(`${apiUrl}/api/thread/${threadId}`, {
                 method: "DELETE",
                 headers: { "Authorization": `Bearer ${token}` }
             });
