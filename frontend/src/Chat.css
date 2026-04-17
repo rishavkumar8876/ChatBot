@@ -1,0 +1,47 @@
+.chats {
+    max-width: 700px;
+    margin: auto;
+    padding: 2rem 1rem;
+    overflow-y: auto;
+
+    scrollbar-width: none;
+}
+
+.chats::-webkit-scrollbar {
+    display: none;
+}
+
+@keyframes chatSlideUp {
+    from { opacity: 0; transform: translateY(15px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+.userDiv {
+    display: flex;
+    justify-content: flex-end;
+    font-size: 0.9rem;
+    animation: chatSlideUp 0.3s ease-out forwards;
+}
+
+.gptDiv {
+    text-align: left;
+    font-size: 0.9rem;
+    animation: chatSlideUp 0.3s ease-out forwards;
+}
+
+.userMessage {
+    background-color: var(--bg-secondary);
+    padding: 10px 20px;
+    border-radius: 14px;
+    margin-left: 15rem;
+    max-width: 500px;
+    width: fit-content;
+}
+
+.hljs {
+    border-radius: 14px !important;
+}
+
+pre {
+    white-space: pre-wrap;
+}
