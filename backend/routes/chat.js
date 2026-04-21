@@ -5,11 +5,11 @@ import authMiddleware from "../middleware/auth.js";
 
 const router = express.Router();
 
+// Apply auth middleware
 router.use(authMiddleware);
 
-
-//test
-router.post("/test", async(req, res) => {
+// ===================== TEST ROUTE =====================
+router.post("/test", async (req, res) => {
     try {
         const thread = new Thread({
             threadId: "abc",
@@ -17,96 +17,122 @@ router.post("/test", async(req, res) => {
         });
 
         const response = await thread.save();
-        res.send(response);
-    } catch(err) {
+        return res.send(response);
+    } catch (err) {
         console.log(err);
-        res.status(500).json({error: "Failed to save in DB"});
+        return res.status(500).json({ error: "Failed to save in DB" });
     }
 });
 
-//Get all threads
-router.get("/thread", async(req, res) => {
+// ===================== GET ALL THREADS =====================
+router.get("/thread", async (req, res) => {
     try {
-        const threads = await Thread.find({ userId: req.user.id }).sort({updatedAt: -1});
-        //descending order of updatedAt...most recent data on top
-        res.json(threads);
-    } catch(err) {
+        const threads = await Thread.find({ userId: req.user.id })
+            .sort({ updatedAt: -1 });
+
+        return res.json(threads);
+    } catch (err) {
         console.log(err);
-        res.status(500).json({error: "Failed to fetch threads"});
+        return res.status(500).json({ error: "Failed to fetch threads" });
     }
 });
 
-router.get("/thread/:threadId", async(req, res) => {
-    const {threadId} = req.params;
+// ===================== GET SINGLE THREAD =====================
+router.get("/thread/:threadId", async (req, res) => {
+    const { threadId } = req.params;
 
     try {
-        const thread = await Thread.findOne({threadId, userId: req.user.id});
+        const thread = await Thread.findOne({
+            threadId,
+            userId: req.user.id
+        });
 
-        if(!thread) {
-            res.status(404).json({error: "Thread not found"});
+        if (!thread) {
+            return res.status(404).json({ error: "Thread not found" });
         }
 
-        res.json(thread.messages);
-    } catch(err) {
+        return res.json(thread.messages);
+    } catch (err) {
         console.log(err);
-        res.status(500).json({error: "Failed to fetch chat"});
+        return res.status(500).json({ error: "Failed to fetch chat" });
     }
 });
 
+// ===================== DELETE THREAD =====================
 router.delete("/thread/:threadId", async (req, res) => {
-    const {threadId} = req.params;
+    const { threadId } = req.params;
 
     try {
-        const deletedThread = await Thread.findOneAndDelete({threadId, userId: req.user.id});
+        const deletedThread = await Thread.findOneAndDelete({
+            threadId,
+            userId: req.user.id
+        });
 
-        if(!deletedThread) {
-            res.status(404).json({error: "Thread not found"});
+        if (!deletedThread) {
+            return res.status(404).json({ error: "Thread not found" });
         }
 
-        res.status(200).json({success : "Thread deleted successfully"});
-
-    } catch(err) {
+        return res.status(200).json({
+            success: "Thread deleted successfully"
+        });
+    } catch (err) {
         console.log(err);
-        res.status(500).json({error: "Failed to delete thread"});
+        return res.status(500).json({ error: "Failed to delete thread" });
     }
 });
 
-router.post("/chat", async(req, res) => {
-    const {threadId, message} = req.body;
+// ===================== CHAT ROUTE =====================
+router.post("/chat", async (req, res) => {
+    const { threadId, message } = req.body;
 
-    if(!threadId || !message) {
-        return res.status(400).json({error: "missing required fields"});
+    if (!threadId || !message) {
+        return res.status(400).json({
+            error: "Missing required fields"
+        });
     }
 
     try {
-        let thread = await Thread.findOne({threadId, userId: req.user.id});
+        let thread = await Thread.findOne({
+            threadId,
+            userId: req.user.id
+        });
 
-        if(!thread) {
-            //create a new thread in Db
+        if (!thread) {
+            // Create new thread
             thread = new Thread({
                 userId: req.user.id,
                 threadId,
                 title: message,
-                messages: [{role: "user", content: message}]
+                messages: [{ role: "user", content: message }]
             });
         } else {
-            thread.messages.push({role: "user", content: message});
+            thread.messages.push({
+                role: "user",
+                content: message
+            });
         }
 
+        // Gemini API call
         const assistantReply = await getGeminiAPIResponse(message);
 
-        thread.messages.push({role: "assistant", content: assistantReply});
+        // Save assistant reply
+        thread.messages.push({
+            role: "assistant",
+            content: assistantReply
+        });
+
         thread.updatedAt = new Date();
 
         await thread.save();
-        res.json({reply: assistantReply});
-    } catch(err) {
+
+        return res.json({ reply: assistantReply });
+
+    } catch (err) {
         console.log(err);
-        res.status(500).json({error: err.message});
+        return res.status(500).json({
+            error: err.message || "Something went wrong"
+        });
     }
 });
-
-
-
 
 export default router;
